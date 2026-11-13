@@ -1,0 +1,26 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar sesión | FINANCONTROL</title>
+</head>
+<body>
+    <h1>FINANCONTROL</h1>
+    <h2>Iniciar sesión</h2>
+
+    {% if form.errors %}
+        <p>Usuario o contraseña incorrectos.</p>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Ingresar</button>
+    </form>
+
+    <p>¿No tienes cuenta?
+        <a href="{% url 'registro' %}">Regístrate</a>
+    </p>
+</body>
+</html>

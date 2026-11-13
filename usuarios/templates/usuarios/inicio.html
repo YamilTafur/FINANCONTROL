@@ -1,0 +1,19 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inicio | FINANCONTROL</title>
+</head>
+<body>
+    <h1>FINANCONTROL</h1>
+
+    <h2>Bienvenido, {{ request.user.username }}</h2>
+    <p>Tu sesión se inició correctamente.</p>
+
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Cerrar sesión</button>
+    </form>
+</body>
+</html>
