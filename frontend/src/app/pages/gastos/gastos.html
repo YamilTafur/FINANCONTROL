@@ -1,0 +1,116 @@
+
+<div class="contenedor">
+  <header class="encabezado">
+    <h1>FINANCONTROL</h1>
+    <p>Administración de gastos</p>
+  </header>
+
+  <section class="panel">
+    <h2>Registrar nuevo gasto</h2>
+
+    <form (ngSubmit)="registrarGasto()">
+      <label>Categoría</label>
+      <select name="categoria" [(ngModel)]="categoria" required>
+        @for (cat of categorias; track cat.id) {
+          <option [ngValue]="cat.id">{{ cat.nombre }}</option>
+        }
+      </select>
+
+      <label>Presupuesto (opcional)</label>
+      <select name="presupuesto" [(ngModel)]="presupuesto">
+        <option [ngValue]="null">Sin presupuesto</option>
+        @for (p of presupuestos; track p.id) {
+          <option [ngValue]="p.id">{{ p.nombre }}</option>
+        }
+      </select>
+
+      <label>Monto (S/)</label>
+      <input
+        type="number"
+        name="monto"
+        [(ngModel)]="monto"
+        min="0.01"
+        step="0.01"
+        required
+      />
+
+      <label>Fecha</label>
+      <input type="date" name="fecha" [(ngModel)]="fecha" required />
+
+      <label>Descripción</label>
+      <input
+        type="text"
+        name="descripcion"
+        [(ngModel)]="descripcion"
+        placeholder="Ej. Compra de alimentos"
+        required
+      />
+
+      <button type="submit" [disabled]="categorias.length === 0">
+        Registrar gasto
+      </button>
+    </form>
+
+    @if (mensaje) {
+      <p class="correcto">{{ mensaje }}</p>
+    }
+
+    @if (error) {
+      <p class="error">{{ error }}</p>
+    }
+
+    @if (categorias.length === 0) {
+      <p class="error">Primero registra una categoría de tipo GASTO.</p>
+    }
+  </section>
+
+  <section class="panel">
+    <h2>Mis gastos</h2>
+
+    <p class="total">
+      Total de gastos: <strong>S/ {{ totalGastos.toFixed(2) }}</strong>
+    </p>
+
+    @if (cargando) {
+      <p>Cargando gastos...</p>
+    } @else if (lista.length === 0) {
+      <p>Aún no tienes gastos registrados.</p>
+    } @else {
+      <div class="tabla">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Categoría</th>
+              <th>Presupuesto</th>
+              <th>Descripción</th>
+              <th>Monto</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (gasto of lista; track gasto.id) {
+              <tr>
+                <td>{{ gasto.fecha }}</td>
+                <td>{{ nombreCategoria(gasto.categoria) }}</td>
+                <td>{{ nombrePresupuesto(gasto.presupuesto) }}</td>
+                <td>{{ gasto.descripcion }}</td>
+                <td>S/ {{ gasto.monto }}</td>
+                <td>
+                  <button
+                    class="eliminar"
+                    type="button"
+                    (click)="eliminarGasto(gasto.id)"
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</div>

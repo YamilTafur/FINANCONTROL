@@ -1,0 +1,90 @@
+
+<div class="contenedor">
+  <header class="encabezado">
+    <div>
+      <h1>FINANCONTROL</h1>
+      <p>Administración de categorías</p>
+    </div>
+  </header>
+
+  <section class="panel">
+    <h2>Nueva categoría</h2>
+
+    <form (ngSubmit)="crearCategoria()">
+      <label>Nombre</label>
+      <input
+        type="text"
+        name="nombre"
+        [(ngModel)]="nombre"
+        placeholder="Ej. Alimentación"
+        required
+      />
+
+      <label>Tipo</label>
+      <select name="tipo" [(ngModel)]="tipo">
+        <option value="GASTO">Gasto</option>
+        <option value="INGRESO">Ingreso</option>
+      </select>
+
+      <label>Descripción</label>
+      <input
+        type="text"
+        name="descripcion"
+        [(ngModel)]="descripcion"
+        placeholder="Descripción opcional"
+      />
+
+      <button type="submit">Registrar categoría</button>
+    </form>
+
+    @if (mensaje) {
+      <p class="correcto">{{ mensaje }}</p>
+    }
+
+    @if (error) {
+      <p class="error">{{ error }}</p>
+    }
+  </section>
+
+  <section class="panel">
+    <h2>Mis categorías</h2>
+
+    @if (cargando) {
+      <p>Cargando categorías...</p>
+    } @else if (lista.length === 0) {
+      <p>Aún no tienes categorías registradas.</p>
+    } @else {
+      <div class="tabla">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Tipo</th>
+              <th>Descripción</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (categoria of lista; track categoria.id) {
+              <tr>
+                <td>{{ categoria.nombre }}</td>
+                <td>{{ categoria.tipo }}</td>
+                <td>{{ categoria.descripcion || '-' }}</td>
+                <td>
+                  <button
+                    class="eliminar"
+                    type="button"
+                    (click)="eliminarCategoria(categoria.id)"
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</div>

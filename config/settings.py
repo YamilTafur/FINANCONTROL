@@ -42,16 +42,20 @@ INSTALLED_APPS = [
     'finanzas',
     'ahorros',
     'reportes',
+    'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -135,3 +139,12 @@ MAILERS = {
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "inicio"
 LOGOUT_REDIRECT_URL = "login"
+
+# Configuración de comunicación con Angular
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:4200",
+]

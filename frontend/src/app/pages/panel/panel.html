@@ -1,0 +1,54 @@
+<div class="contenedor">
+  <header class="encabezado">
+    <div>
+      <h1>FINANCONTROL</h1>
+      <p>Panel de control financiero</p>
+    </div>
+    <button type="button" (click)="cargarResumen()">Actualizar</button>
+  </header>
+
+  @if (cargando) {
+    <p>Cargando información financiera...</p>
+  } @else if (error) {
+    <p class="error">{{ error }}</p>
+  } @else if (resumen) {
+    <section class="tarjetas">
+      <article class="tarjeta ingresos">
+        <span>Ingresos totales</span>
+        <h2>S/ {{ resumen.total_ingresos | number:'1.2-2' }}</h2>
+        <p>{{ resumen.cantidad_ingresos }} registros</p>
+      </article>
+
+      <article class="tarjeta gastos">
+        <span>Gastos totales</span>
+        <h2>S/ {{ resumen.total_gastos | number:'1.2-2' }}</h2>
+        <p>{{ resumen.cantidad_gastos }} registros</p>
+      </article>
+
+      <article class="tarjeta balance">
+        <span>Balance disponible</span>
+        <h2>S/ {{ resumen.balance | number:'1.2-2' }}</h2>
+        <p>Ingresos menos gastos</p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Resumen de movimientos</h2>
+
+      <div class="movimiento">
+        <span>Ingresos registrados</span>
+        <strong>{{ resumen.cantidad_ingresos }}</strong>
+      </div>
+
+      <div class="movimiento">
+        <span>Gastos registrados</span>
+        <strong>{{ resumen.cantidad_gastos }}</strong>
+      </div>
+
+      <div class="movimiento">
+        <span>Balance actual</span>
+        <strong>S/ {{ resumen.balance | number:'1.2-2' }}</strong>
+      </div>
+    </section>
+  }
+</div>

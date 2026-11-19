@@ -10,6 +10,14 @@ class Categoria(models.Model):
         ('GASTO', 'Gasto'),
     ]
 
+
+    GRUPOS_DISTRIBUCION = [
+        ('NECESIDADES', 'Necesidades'),
+        ('GUSTOS', 'Gustos'),
+        ('DEUDAS', 'Deudas'),
+    ]
+
+
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -18,6 +26,14 @@ class Categoria(models.Model):
 
     nombre = models.CharField(max_length=100)
     tipo = models.CharField(max_length=10, choices=TIPOS)
+
+    grupo_distribucion = models.CharField(
+        max_length=20,
+        choices=GRUPOS_DISTRIBUCION,
+        null=True,
+        blank=True
+    )
+
     descripcion = models.TextField(blank=True, null=True)
     activa = models.BooleanField(default=True)
 
@@ -36,6 +52,13 @@ class Presupuesto(models.Model):
     nombre = models.CharField(max_length=100)
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
+
+    monto_limite = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
     creado = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -74,11 +97,51 @@ class Ingreso(models.Model):
         return f"Ingreso de S/ {self.monto}"
 
 
+class ConfiguracionDistribucion(models.Model):
+
+    usuario = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='configuracion_distribucion'
+    )
+
+    porcentaje_necesidades = models.DecimalField(
+        max_digits=5, decimal_places=2, default=55
+    )
+
+    porcentaje_gustos = models.DecimalField(
+        max_digits=5, decimal_places=2, default=5
+    )
+
+    porcentaje_deudas = models.DecimalField(
+        max_digits=5, decimal_places=2, default=10
+    )
+
+    porcentaje_ahorro = models.DecimalField(
+        max_digits=5, decimal_places=2, default=15
+    )
+
+    porcentaje_inversion = models.DecimalField(
+        max_digits=5, decimal_places=2, default=15
+    )
+
+    actualizada = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Distribución de {self.usuario}"
+
+
 class DistribucionIngreso(models.Model):
 
     TIPOS = [
         ('MANUAL', 'Manual'),
         ('AUTOMATICA', 'Automática'),
+    ]
+
+    MODALIDADES = [
+        ('NINGUNA', 'Sin porcentajes'),
+        ('PREDETERMINADA', 'Predeterminada'),
+        ('PERSONALIZADA', 'Personalizada'),
     ]
 
     ingreso = models.OneToOneField(
@@ -88,6 +151,13 @@ class DistribucionIngreso(models.Model):
     )
 
     tipo = models.CharField(max_length=15, choices=TIPOS)
+
+    modalidad = models.CharField(
+        max_length=20,
+        choices=MODALIDADES,
+        default='NINGUNA'
+    )
+
     fecha = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -96,16 +166,40 @@ class DistribucionIngreso(models.Model):
 
 class DetalleDistribucion(models.Model):
 
+    DESTINOS = [
+        ('NECESIDADES', 'Necesidades'),
+        ('GUSTOS', 'Gustos'),
+        ('DEUDAS', 'Deudas'),
+        ('AHORRO', 'Ahorro'),
+        ('INVERSION', 'Inversión'),
+    ]
+
     distribucion = models.ForeignKey(
         DistribucionIngreso,
         on_delete=models.CASCADE,
         related_name='detalles'
     )
 
+    destino = models.CharField(
+        max_length=20,
+        choices=DESTINOS,
+        default='NECESIDADES'
+    )
+
     categoria = models.ForeignKey(
         Categoria,
         on_delete=models.PROTECT,
-        related_name='distribuciones'
+        related_name='distribuciones',
+        null=True,
+        blank=True
+    )
+
+    meta_ahorro = models.ForeignKey(
+        'ahorros.MetaAhorro',
+        on_delete=models.PROTECT,
+        related_name='distribuciones',
+        null=True,
+        blank=True
     )
 
     monto = models.DecimalField(max_digits=12, decimal_places=2)
@@ -122,11 +216,15 @@ class DetalleDistribucion(models.Model):
             models.UniqueConstraint(
                 fields=['distribucion', 'categoria'],
                 name='categoria_unica_por_distribucion'
+            ),
+            models.UniqueConstraint(
+                fields=['distribucion', 'meta_ahorro'],
+                name='meta_unica_por_distribucion'
             )
         ]
 
     def __str__(self):
-        return f"{self.categoria.nombre}: S/ {self.monto}"
+        return f"{self.destino}: S/ {self.monto}"
 
 
 class Gasto(models.Model):

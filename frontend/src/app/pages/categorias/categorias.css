@@ -1,0 +1,89 @@
+
+.contenedor {
+  max-width: 1100px;
+  margin: 35px auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  color: #1e293b;
+}
+
+.encabezado {
+  background: #14532d;
+  color: white;
+  padding: 22px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+}
+
+.encabezado h1 {
+  margin: 0;
+}
+
+.encabezado p {
+  margin-bottom: 0;
+}
+
+.panel {
+  background: white;
+  padding: 25px;
+  margin-bottom: 25px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin: 15px 0 7px;
+}
+
+input, select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+}
+
+button {
+  margin-top: 18px;
+  padding: 11px 18px;
+  background: #15803d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tabla {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th, td {
+  padding: 13px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+th {
+  background: #f1f5f9;
+}
+
+.eliminar {
+  background: #dc2626;
+  margin: 0;
+}
+
+.correcto {
+  color: #15803d;
+}
+
+.error {
+  color: #dc2626;
+}

@@ -92,3 +92,46 @@ class ConfiguracionProteccion(models.Model):
 
     def __str__(self):
         return f"Protección de {self.meta.nombre}"
+
+
+class RetiroAhorro(models.Model):
+
+    ESTADOS = [
+        ("PENDIENTE", "Pendiente"),
+        ("CONFIRMADO", "Confirmado"),
+        ("RECHAZADO", "Rechazado"),
+    ]
+
+    meta = models.ForeignKey(
+        MetaAhorro,
+        on_delete=models.CASCADE,
+        related_name="retiros"
+    )
+
+    monto = models.DecimalField(
+        max_digits=12,
+        decimal_places=2
+    )
+
+    fecha = models.DateField()
+
+    descripcion = models.CharField(
+        max_length=255,
+        blank=True
+    )
+
+    estado = models.CharField(
+        max_length=15,
+        choices=ESTADOS,
+        default="PENDIENTE"
+    )
+
+    solicitado = models.DateTimeField(auto_now_add=True)
+
+    resuelto = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return f"Retiro de S/ {self.monto} - {self.estado}"

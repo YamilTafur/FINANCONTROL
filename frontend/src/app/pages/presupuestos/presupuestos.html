@@ -1,0 +1,111 @@
+
+<div class="contenedor">
+  <h1>Administración de presupuestos</h1>
+  <p>Organiza tus presupuestos por periodos y establece límites de gasto.</p>
+
+  <section class="formulario">
+    <h2>Crear presupuesto</h2>
+
+    <form (ngSubmit)="crear()">
+      <label>Nombre del presupuesto</label>
+      <input
+        type="text"
+        name="nombre"
+        [(ngModel)]="nombre"
+        placeholder="Ej. Presupuesto de noviembre"
+        required
+      />
+
+      <label>Fecha de inicio</label>
+      <input
+        type="date"
+        name="fechaInicio"
+        [(ngModel)]="fechaInicio"
+        required
+      />
+
+      <label>Fecha de fin</label>
+      <input
+        type="date"
+        name="fechaFin"
+        [(ngModel)]="fechaFin"
+        required
+      />
+
+      <label>Límite de gasto (S/)</label>
+      <input
+        type="number"
+        name="montoLimite"
+        [(ngModel)]="montoLimite"
+        min="0.01"
+        step="0.01"
+        placeholder="Ej. 500.00"
+        required
+      />
+
+      <button type="submit">Guardar presupuesto</button>
+    </form>
+
+    @if (mensaje) {
+      <p class="exito">{{ mensaje }}</p>
+    }
+
+    @if (error) {
+      <p class="error">{{ error }}</p>
+    }
+  </section>
+
+  <section class="listado">
+    <h2>Mis presupuestos</h2>
+
+    @if (cargando) {
+      <p>Cargando presupuestos...</p>
+    } @else if (lista.length === 0) {
+      <p>No tienes presupuestos registrados.</p>
+    } @else {
+      @for (p of lista; track p.id) {
+        <article class="presupuesto">
+          <div>
+            <h3>{{ p.nombre }}</h3>
+
+            <p>Desde: {{ p.fecha_inicio }}</p>
+            <p>Hasta: {{ p.fecha_fin }}</p>
+            <p>
+              Límite de gasto:
+              <strong>S/ {{ formatearMonto(p.monto_limite) }}</strong>
+            </p>
+
+            @if (obtenerResumen(p.id); as r) {
+              <hr />
+
+              <p>
+                Total de ingresos:
+                <strong>S/ {{ formatearMonto(r.total_ingresos) }}</strong>
+              </p>
+
+              <p>
+                Total de gastos:
+                <strong>S/ {{ formatearMonto(r.total_gastos) }}</strong>
+              </p>
+
+              <p>
+                Saldo disponible:
+                <strong>S/ {{ formatearMonto(r.saldo) }}</strong>
+              </p>
+            } @else {
+              <p>Cargando resumen...</p>
+            }
+          </div>
+
+          <button
+            class="eliminar"
+            type="button"
+            (click)="eliminar(p.id)"
+          >
+            Eliminar
+          </button>
+        </article>
+      }
+    }
+  </section>
+</div>

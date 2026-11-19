@@ -1,0 +1,299 @@
+
+<main class="contenedor">
+  <header class="encabezado">
+    <div>
+      <h1>Mis ahorros</h1>
+      <p>Organiza tus metas y protege el dinero que estás ahorrando.</p>
+    </div>
+    <a routerLink="/menu" class="volver">Volver al menú</a>
+  </header>
+
+  @if (mensaje) {
+    <div class="alerta exito">{{ mensaje }}</div>
+  }
+
+  @if (error) {
+    <div class="alerta error">{{ error }}</div>
+  }
+
+  @if (cargando) {
+    <p class="cargando">Cargando información...</p>
+  }
+
+  <section class="resumen">
+    <article class="indicador">
+      <span>Mis metas</span>
+      <strong>{{ metas.length }}</strong>
+    </article>
+
+    <article class="indicador">
+      <span>Total ahorrado</span>
+      <strong>S/ {{ totalAhorrado.toFixed(2) }}</strong>
+    </article>
+
+    <article class="indicador">
+      <span>Solicitudes pendientes</span>
+      <strong>{{ retirosPendientes }}</strong>
+    </article>
+  </section>
+
+  <section class="seccion">
+    <h2>Crear una meta de ahorro</h2>
+
+    <div class="formulario">
+      <label>
+        Nombre de la meta
+        <input type="text" [(ngModel)]="nombre" placeholder="Ej. Comprar una laptop">
+      </label>
+
+      <label>
+        Monto objetivo (S/)
+        <input type="number" [(ngModel)]="montoObjetivo" min="0.01" step="0.01">
+      </label>
+
+      <label>
+        Fecha de inicio
+        <input type="date" [(ngModel)]="fechaInicio">
+      </label>
+
+      <label>
+        Fecha límite (opcional)
+        <input type="date" [(ngModel)]="fechaLimite">
+      </label>
+
+      <label class="ancho-completo">
+        Descripción
+        <textarea [(ngModel)]="descripcionMeta" rows="2"
+          placeholder="Describe qué deseas alcanzar"></textarea>
+      </label>
+
+      <button type="button" (click)="crearMeta()">Crear meta</button>
+    </div>
+  </section>
+
+  <section class="seccion">
+    <h2>Mis metas</h2>
+
+    @if (metas.length === 0) {
+      <p class="vacio">Todavía no tienes metas de ahorro registradas.</p>
+    }
+
+    <div class="metas">
+      @for (meta of metas; track meta.id) {
+        <article class="tarjeta-meta"
+          [class.seleccionada]="metaSeleccionadaId === meta.id">
+
+          <div class="fila-titulo">
+            <h3>{{ meta.nombre }}</h3>
+            <span class="estado">{{ meta.estado }}</span>
+          </div>
+
+          <p>{{ meta.descripcion || 'Sin descripción' }}</p>
+
+          <div class="cifras">
+            <span>Ahorrado: <strong>S/ {{ meta.total_ahorrado }}</strong></span>
+            <span>Objetivo: <strong>S/ {{ meta.monto_objetivo }}</strong></span>
+          </div>
+
+          <div class="barra">
+            <div class="progreso"
+              [style.width.%]="meta.porcentaje_avance"></div>
+          </div>
+
+          <div class="fila-progreso">
+            <span>{{ meta.porcentaje_avance }}% completado</span>
+            <span>Falta: S/ {{ meta.monto_restante }}</span>
+          </div>
+
+          <button type="button" class="boton-secundario"
+            (click)="metaSeleccionadaId = meta.id; cambiarMeta()">
+            Administrar esta meta
+          </button>
+        </article>
+      }
+    </div>
+  </section>
+
+  @if (metaSeleccionada) {
+    <section class="seccion">
+      <h2>Administrar: {{ metaSeleccionada.nombre }}</h2>
+
+      <div class="columnas">
+        <article class="subseccion">
+          <h3>Registrar un aporte</h3>
+
+          <label>
+            Monto (S/)
+            <input type="number" [(ngModel)]="montoAporte"
+              min="0.01" step="0.01">
+          </label>
+
+          <label>
+            Fecha
+            <input type="date" [(ngModel)]="fechaAporte">
+          </label>
+
+          <label>
+            Descripción
+            <input type="text" [(ngModel)]="descripcionAporte"
+              placeholder="Ej. Ahorro mensual">
+          </label>
+
+          <button type="button" (click)="registrarAporte()">
+            Registrar aporte
+          </button>
+        </article>
+
+        <article class="subseccion">
+          <h3>Protección de ahorro</h3>
+
+          <label class="opcion">
+            <input type="checkbox" [(ngModel)]="proteccionActiva">
+            Activar protección
+          </label>
+
+          <label class="opcion">
+            <input type="checkbox" [(ngModel)]="permitirRetiros">
+            Permitir retiros
+          </label>
+
+          <label class="opcion">
+            <input type="checkbox" [(ngModel)]="requiereConfirmacion">
+            Requerir confirmación de retiros
+          </label>
+
+          <label>
+            Monto mínimo protegido (S/)
+            <input type="number" [(ngModel)]="montoMinimoProtegido"
+              min="0" step="0.01">
+          </label>
+
+          <button
+            type="button"
+            class="boton-secundario"
+            [disabled]="guardandoProteccion"
+            (click)="guardarProteccion()">
+            {{ guardandoProteccion ? 'Guardando...' : 'Guardar protección' }}
+          </button>
+
+          <p class="ayuda">
+            Si la protección está activa y los retiros están deshabilitados,
+            el sistema rechazará las solicitudes.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="seccion">
+      <h2>Solicitar un retiro</h2>
+
+      <div class="formulario">
+        <label>
+          Monto (S/)
+          <input type="number" [(ngModel)]="montoRetiro"
+            min="0.01" step="0.01">
+        </label>
+
+        <label>
+          Fecha
+          <input type="date" [(ngModel)]="fechaRetiro">
+        </label>
+
+        <label class="ancho-completo">
+          Motivo o descripción
+          <input type="text" [(ngModel)]="descripcionRetiro"
+            placeholder="Indica el motivo del retiro">
+        </label>
+
+        <button type="button" class="boton-alerta"
+          (click)="solicitarRetiro()">
+          Enviar solicitud de retiro
+        </button>
+      </div>
+    </section>
+  }
+
+  <section class="seccion">
+    <h2>Historial de aportes</h2>
+
+    @if (aportes.length === 0) {
+      <p class="vacio">No hay aportes registrados.</p>
+    }
+
+    <div class="tabla-contenedor">
+      <table>
+        <thead>
+          <tr>
+            <th>Meta</th>
+            <th>Fecha</th>
+            <th>Descripción</th>
+            <th>Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (aporte of aportes; track aporte.id) {
+            <tr>
+              <td>{{ nombreMeta(aporte.meta) }}</td>
+              <td>{{ aporte.fecha }}</td>
+              <td>{{ aporte.descripcion || 'Sin descripción' }}</td>
+              <td>S/ {{ aporte.monto }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="seccion">
+    <h2>Solicitudes de retiro</h2>
+
+    @if (retiros.length === 0) {
+      <p class="vacio">Todavía no hay solicitudes de retiro.</p>
+    }
+
+    <div class="tabla-contenedor">
+      <table>
+        <thead>
+          <tr>
+            <th>Meta</th>
+            <th>Fecha</th>
+            <th>Monto</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (retiro of retiros; track retiro.id) {
+            <tr>
+              <td>{{ nombreMeta(retiro.meta) }}</td>
+              <td>{{ retiro.fecha }}</td>
+              <td>S/ {{ retiro.monto }}</td>
+              <td>
+                <span class="estado"
+                  [class.pendiente]="retiro.estado === 'PENDIENTE'"
+                  [class.confirmado]="retiro.estado === 'CONFIRMADO'"
+                  [class.rechazado]="retiro.estado === 'RECHAZADO'">
+                  {{ retiro.estado }}
+                </span>
+              </td>
+              <td>
+                @if (retiro.estado === 'PENDIENTE') {
+                  <button type="button" class="boton-pequeno"
+                    (click)="confirmarRetiro(retiro.id)">
+                    Confirmar
+                  </button>
+                  <button type="button" class="boton-pequeno rechazar"
+                    (click)="rechazarRetiro(retiro.id)">
+                    Rechazar
+                  </button>
+                } @else {
+                  —
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
