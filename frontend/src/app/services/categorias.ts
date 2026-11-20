@@ -7,6 +7,7 @@ export interface Categoria {
   id: number;
   nombre: string;
   tipo: 'INGRESO' | 'GASTO';
+  grupo_distribucion: string | null;
   descripcion: string | null;
   activa: boolean;
 }

@@ -21,22 +21,33 @@
   }
 
   <section class="resumen">
-    <article class="indicador">
-      <span>Mis metas</span>
-      <strong>{{ metas.length }}</strong>
-    </article>
 
-    <article class="indicador">
-      <span>Total ahorrado</span>
-      <strong>S/ {{ totalAhorrado.toFixed(2) }}</strong>
-    </article>
+  <article class="indicador">
+    <span>Mis metas</span>
+    <strong>{{ metas.length }}</strong>
+  </article>
 
-    <article class="indicador">
-      <span>Solicitudes pendientes</span>
-      <strong>{{ retirosPendientes }}</strong>
-    </article>
-  </section>
+  <article class="indicador">
+    <span>Ahorro general</span>
+    <strong>S/ {{ ahorroGeneral.toFixed(2) }}</strong>
+  </article>
 
+  <article class="indicador">
+    <span>Ahorro en metas</span>
+    <strong>S/ {{ totalAhorroMetas.toFixed(2) }}</strong>
+  </article>
+
+  <article class="indicador">
+    <span>Total ahorrado</span>
+    <strong>S/ {{ totalAhorrado.toFixed(2) }}</strong>
+  </article>
+
+  <article class="indicador">
+    <span>Solicitudes pendientes</span>
+    <strong>{{ retirosPendientes }}</strong>
+  </article>
+
+</section>
   <section class="seccion">
     <h2>Crear una meta de ahorro</h2>
 

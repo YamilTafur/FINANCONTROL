@@ -44,6 +44,10 @@ export interface RetiroAhorro {
   resuelto: string | null;
 }
 
+export interface ResumenAhorros {
+  ahorro_general: string | number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -135,4 +139,10 @@ export class Ahorros {
       {}
     );
   }
+
+  obtenerResumen(): Observable<ResumenAhorros> {
+    return this.http.get<ResumenAhorros>(
+      '/api/ahorros/resumen/'
+  );
+}
 }

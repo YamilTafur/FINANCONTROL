@@ -2,8 +2,16 @@
 <div class="contenedor">
   <header class="encabezado">
     <h1>FINANCONTROL</h1>
-    <p>Administración de ingresos</p>
+    <p>Administración de ingresos y distribución de dinero</p>
   </header>
+
+  @if (mensaje) {
+    <p class="correcto">{{ mensaje }}</p>
+  }
+
+  @if (error) {
+    <p class="error">{{ error }}</p>
+  }
 
   <section class="panel">
     <h2>Registrar nuevo ingreso</h2>
@@ -25,41 +33,78 @@
       </select>
 
       <label>Monto (S/)</label>
-      <input
-        type="number"
-        name="monto"
-        [(ngModel)]="monto"
-        min="0.01"
-        step="0.01"
-        required
-      />
+      <input type="number" name="monto" [(ngModel)]="monto"
+        min="0.01" step="0.01" required />
 
       <label>Fecha</label>
-      <input
-        type="date"
-        name="fecha"
-        [(ngModel)]="fecha"
-        required
-      />
+      <input type="date" name="fecha" [(ngModel)]="fecha" required />
 
       <label>Descripción</label>
-      <input
-        type="text"
-        name="descripcion"
-        [(ngModel)]="descripcion"
-        placeholder="Ej. Sueldo mensual"
-        required
-      />
+      <input type="text" name="descripcion" [(ngModel)]="descripcion"
+        placeholder="Ej. Sueldo mensual" required />
 
       <button type="submit">Registrar ingreso</button>
     </form>
+  </section>
 
-    @if (mensaje) {
-      <p class="correcto">{{ mensaje }}</p>
-    }
+  <section class="panel">
+    <div class="titulo-panel">
+      <div>
+        <h2>Distribución del ingreso</h2>
+        <p>Configura cómo deseas organizar el dinero que recibes.</p>
+      </div>
+      <button type="button" class="boton-secundario"
+        (click)="mostrarConfiguracion = !mostrarConfiguracion">
+        {{ mostrarConfiguracion ? 'Ocultar configuración' : 'Configurar porcentajes' }}
+      </button>
+    </div>
 
-    @if (error) {
-      <p class="error">{{ error }}</p>
+    @if (mostrarConfiguracion) {
+      <div class="configuracion">
+        <p>Los porcentajes personalizados deben sumar exactamente 100%.</p>
+
+        <div class="porcentajes">
+          <label>
+            Necesidades (%)
+            <input type="number" name="necesidades"
+              [(ngModel)]="configuracion.porcentaje_necesidades"
+              min="0" max="100" />
+          </label>
+
+          <label>
+            Gustos (%)
+            <input type="number" name="gustos"
+              [(ngModel)]="configuracion.porcentaje_gustos"
+              min="0" max="100" />
+          </label>
+
+          <label>
+            Deudas (%)
+            <input type="number" name="deudas"
+              [(ngModel)]="configuracion.porcentaje_deudas"
+              min="0" max="100" />
+          </label>
+
+          <label>
+            Ahorro (%)
+            <input type="number" name="ahorro"
+              [(ngModel)]="configuracion.porcentaje_ahorro"
+              min="0" max="100" />
+          </label>
+
+          <label>
+            Inversión (%)
+            <input type="number" name="inversion"
+              [(ngModel)]="configuracion.porcentaje_inversion"
+              min="0" max="100" />
+          </label>
+        </div>
+
+        <button type="button" (click)="guardarConfiguracion()"
+          [disabled]="guardandoConfiguracion">
+          {{ guardandoConfiguracion ? 'Guardando...' : 'Guardar porcentajes' }}
+        </button>
+      </div>
     }
   </section>
 
@@ -80,6 +125,7 @@
               <th>Presupuesto</th>
               <th>Descripción</th>
               <th>Monto</th>
+              <th>Distribución</th>
               <th>Acción</th>
             </tr>
           </thead>
@@ -95,11 +141,22 @@
                 <td>{{ ingreso.descripcion }}</td>
                 <td>S/ {{ ingreso.monto }}</td>
                 <td>
-                  <button
-                    class="eliminar"
-                    type="button"
-                    (click)="eliminarIngreso(ingreso.id)"
-                  >
+                  @if (ingreso.tiene_distribucion) {
+                    <span class="estado-distribuido">Distribuido</span>
+                  } @else {
+                    <span class="estado-pendiente">Pendiente</span>
+                  }
+                </td>
+                <td class="acciones">
+                  @if (!ingreso.tiene_distribucion) {
+                    <button type="button" class="boton-distribuir"
+                      (click)="abrirDistribucion(ingreso)">
+                      Distribuir
+                    </button>
+                  }
+
+                  <button class="eliminar" type="button"
+                    (click)="eliminarIngreso(ingreso.id)">
                     Eliminar
                   </button>
                 </td>
@@ -110,4 +167,160 @@
       </div>
     }
   </section>
+
+  @if (ingresoSeleccionado) {
+    <section class="panel panel-distribucion">
+      <h2>Distribuir ingreso</h2>
+
+      <p>
+        Ingreso seleccionado:
+        <strong>{{ ingresoSeleccionado.descripcion }}</strong>
+      </p>
+      <p>
+        Monto disponible:
+        <strong>S/ {{ ingresoSeleccionado.monto }}</strong>
+      </p>
+
+      @if (!vistaPrevia) {
+        <h3>Selecciona el tipo de distribución</h3>
+
+        <div class="opciones-distribucion">
+          <button type="button"
+            (click)="previsualizarAutomatica('PREDETERMINADA')"
+            [disabled]="procesandoDistribucion">
+            Distribución automática predeterminada
+          </button>
+
+          <button type="button" class="boton-secundario"
+            (click)="previsualizarAutomatica('PERSONALIZADA')"
+            [disabled]="procesandoDistribucion">
+            Distribución automática personalizada
+          </button>
+        </div>
+
+        <div class="separador"></div>
+
+        <h3>Distribución manual</h3>
+        <p>Escribe cuánto deseas asignar a cada destino. Puedes dejar destinos en cero.</p>
+
+        <div class="porcentajes">
+          <label>
+            Necesidades (S/)
+            <input type="number" name="manualNecesidades"
+              [(ngModel)]="manual.NECESIDADES" min="0" step="0.01" />
+          </label>
+
+          <label>
+            Gustos (S/)
+            <input type="number" name="manualGustos"
+              [(ngModel)]="manual.GUSTOS" min="0" step="0.01" />
+          </label>
+
+          <label>
+            Deudas (S/)
+            <input type="number" name="manualDeudas"
+              [(ngModel)]="manual.DEUDAS" min="0" step="0.01" />
+          </label>
+
+          <label>
+            Ahorro (S/)
+            <input type="number" name="manualAhorro"
+              [(ngModel)]="manual.AHORRO" min="0" step="0.01" />
+          </label>
+
+          <label>
+            Inversión (S/)
+            <input type="number" name="manualInversion"
+              [(ngModel)]="manual.INVERSION" min="0" step="0.01" />
+          </label>
+        </div>
+
+        <button type="button" (click)="previsualizarManual()"
+          [disabled]="procesandoDistribucion">
+          {{ procesandoDistribucion ? 'Calculando...' : 'Revisar distribución manual' }}
+        </button>
+      } @else {
+        <h3>Revisar propuesta de distribución</h3>
+
+        <div class="tabla">
+          <table>
+            <thead>
+              <tr>
+                <th>Destino</th>
+                <th>Porcentaje</th>
+                <th>Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (detalle of vistaPrevia.detalles; track detalle.destino) {
+                <tr>
+                  <td>{{ detalle.destino }}</td>
+                  <td>
+                    @if (tipoDistribucion === 'AUTOMATICA') {
+                      {{ detalle.porcentaje }}%
+                    } @else {
+                      Manual
+                    }
+                  </td>
+                  <td>S/ {{ detalle.monto }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @for (detalle of vistaPrevia.detalles; track detalle.destino) {
+          @if (Number(detalle.monto) > 0 &&
+              (detalle.destino === 'NECESIDADES' ||
+               detalle.destino === 'GUSTOS' ||
+               detalle.destino === 'DEUDAS')) {
+            <label>
+              Categoría para {{ detalle.destino }}
+              <select [(ngModel)]="categoriasSeleccionadas[detalle.destino]"
+                [name]="'categoria_' + detalle.destino">
+                <option [ngValue]="null">Selecciona una categoría</option>
+                @for (cat of categoriasDestino(detalle.destino); track cat.id) {
+                  <option [ngValue]="cat.id">{{ cat.nombre }}</option>
+                }
+              </select>
+            </label>
+          }
+        }
+
+        @if (vistaPrevia.detalles.some(d => d.destino === 'AHORRO' && Number(d.monto) > 0)) {
+          <label>
+            Meta de ahorro (opcional)
+            <select name="metaSeleccionada" [(ngModel)]="metaSeleccionada">
+              <option [ngValue]="null">Ahorro general</option>
+              @for (meta of vistaPrevia.opciones.metas_ahorro; track meta.id) {
+                <option [ngValue]="meta.id">{{ meta.nombre }}</option>
+              }
+            </select>
+          </label>
+        }
+
+        <div class="resumen-distribucion">
+          <p>Total del ingreso: <strong>S/ {{ vistaPrevia.total_ingreso }}</strong></p>
+          <p>Total distribuido: <strong>S/ {{ vistaPrevia.total_distribuido }}</strong></p>
+          <p>Pendiente: <strong>S/ {{ vistaPrevia.pendiente }}</strong></p>
+        </div>
+
+        <p class="aviso">
+          Revisa los montos y las categorías antes de confirmar. Esta acción registrará la distribución.
+        </p>
+
+        <div class="acciones-finales">
+          <button type="button" (click)="confirmarDistribucion()"
+            [disabled]="procesandoDistribucion">
+            {{ procesandoDistribucion ? 'Confirmando...' : 'Confirmar distribución' }}
+          </button>
+
+          <button type="button" class="boton-secundario"
+            (click)="cancelarDistribucion()">
+            Cancelar
+          </button>
+        </div>
+      }
+    </section>
+  }
 </div>

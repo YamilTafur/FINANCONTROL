@@ -26,6 +26,7 @@ from ahorros.views import (
     AporteAhorroViewSet,
     ConfiguracionProteccionViewSet,
     RetiroAhorroViewSet,
+    resumen_ahorros_api,
 )
 # Router de la API
 router = DefaultRouter()
@@ -110,6 +111,12 @@ urlpatterns = [
         confirmar_distribucion_api,
         name="api_confirmar_distribucion"
     ),
+
+    path(
+        "api/ahorros/resumen/",
+        resumen_ahorros_api,
+        name="api_resumen_ahorros"
+),
 
     # API REST
     path("api/", include(router.urls)),

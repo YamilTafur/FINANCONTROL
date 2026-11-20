@@ -12,6 +12,7 @@ from .models import (
     DistribucionIngreso,
     DetalleDistribucion,
 )
+
 from .distribution_services import (
     calcular_distribucion_automatica,
     obtener_porcentajes_predeterminados,
@@ -46,6 +47,11 @@ class IngresoSerializer(serializers.ModelSerializer):
         allow_null=True
     )
 
+    tiene_distribucion = serializers.SerializerMethodField()
+
+    def get_tiene_distribucion(self, obj):
+        return DistribucionIngreso.objects.filter(ingreso=obj).exists()
+
     class Meta:
         model = Ingreso
         fields = [
@@ -56,8 +62,9 @@ class IngresoSerializer(serializers.ModelSerializer):
             "fecha",
             "descripcion",
             "creado",
+            "tiene_distribucion",
         ]
-        read_only_fields = ["id", "creado"]
+        read_only_fields = ["id", "creado", "tiene_distribucion"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -126,7 +133,7 @@ class PresupuestoSerializer(serializers.ModelSerializer):
             "fecha_inicio",
             "fecha_fin",
             "monto_limite",
-            "creado"
+            "creado",
         ]
         read_only_fields = ["id", "creado"]
 
@@ -264,7 +271,7 @@ class DetalleDistribucionEntradaSerializer(serializers.Serializer):
 
             if not categoria:
                 raise serializers.ValidationError({
-                    "categoria": "Este destino necesita una categoria."
+                    "categoria": "Este destino necesita una categoría."
                 })
 
             if meta:
@@ -277,7 +284,7 @@ class DetalleDistribucionEntradaSerializer(serializers.Serializer):
             if categoria.grupo_distribucion != grupo_esperado:
                 raise serializers.ValidationError({
                     "categoria": (
-                        f"La categoria debe pertenecer al grupo {grupo_esperado}."
+                        f"La categoría debe pertenecer al grupo {grupo_esperado}."
                     )
                 })
 
@@ -285,14 +292,14 @@ class DetalleDistribucionEntradaSerializer(serializers.Serializer):
 
             if categoria:
                 raise serializers.ValidationError({
-                    "categoria": "El destino ahorro no utiliza categorias de gasto."
+                    "categoria": "El destino ahorro no utiliza categorías de gasto."
                 })
 
         elif destino == "INVERSION":
 
             if categoria or meta:
                 raise serializers.ValidationError({
-                    "destino": "La inversion se registra como dinero reservado."
+                    "destino": "La inversión se registra como dinero reservado."
                 })
 
         return attrs
@@ -355,13 +362,13 @@ class DistribucionConfirmacionSerializer(serializers.Serializer):
         # Evitar distribuir dos veces el mismo ingreso.
         if DistribucionIngreso.objects.filter(ingreso=ingreso).exists():
             raise serializers.ValidationError({
-                "ingreso": "Este ingreso ya tiene una distribucion registrada."
+                "ingreso": "Este ingreso ya tiene una distribución registrada."
             })
 
         # Comprobar la modalidad.
         if tipo == "MANUAL" and modalidad != "NINGUNA":
             raise serializers.ValidationError({
-                "modalidad": "La distribucion manual debe utilizar NINGUNA."
+                "modalidad": "La distribución manual debe utilizar NINGUNA."
             })
 
         if tipo == "AUTOMATICA" and modalidad not in [
@@ -369,7 +376,7 @@ class DistribucionConfirmacionSerializer(serializers.Serializer):
             "PERSONALIZADA"
         ]:
             raise serializers.ValidationError({
-                "modalidad": "Selecciona una modalidad automatica valida."
+                "modalidad": "Selecciona una modalidad automática válida."
             })
 
         # Calcular el total distribuido.
@@ -380,13 +387,10 @@ class DistribucionConfirmacionSerializer(serializers.Serializer):
 
         if total_distribuido > ingreso.monto:
             raise serializers.ValidationError({
-                "detalles": "La distribucion supera el monto del ingreso."
+                "detalles": "La distribución supera el monto del ingreso."
             })
 
-        # ==================================================
         # VALIDACIONES DE DISTRIBUCION MANUAL
-        # ==================================================
-
         if tipo == "MANUAL":
 
             if any(
@@ -394,16 +398,12 @@ class DistribucionConfirmacionSerializer(serializers.Serializer):
                 for detalle in detalles
             ):
                 raise serializers.ValidationError({
-                    "detalles": "La distribucion manual no utiliza porcentajes."
+                    "detalles": "La distribución manual no utiliza porcentajes."
                 })
 
-        # ==================================================
         # VALIDACIONES DE DISTRIBUCION AUTOMATICA
-        # ==================================================
-
         else:
 
-            # Obtener los porcentajes correspondientes.
             if modalidad == "PREDETERMINADA":
 
                 porcentajes = obtener_porcentajes_predeterminados()
@@ -457,22 +457,21 @@ class DistribucionConfirmacionSerializer(serializers.Serializer):
                     raise serializers.ValidationError({
                         "detalles": (
                             f"El destino {destino} debe recibir "
-                            f"S/ {importe_esperado}, pero se intento "
+                            f"S/ {importe_esperado}, pero se intentó "
                             f"asignar S/ {importe_asignado}."
                         )
                     })
 
-            # La distribucion automatica debe cubrir todo el ingreso.
+            # La distribución automática debe cubrir todo el ingreso.
             if total_distribuido != ingreso.monto:
                 raise serializers.ValidationError({
                     "detalles": (
-                        "La distribucion automatica debe cubrir "
+                        "La distribución automática debe cubrir "
                         "todo el ingreso."
                     )
                 })
 
             # Calcular el porcentaje real de cada detalle.
-            # Se calcula sobre el ingreso completo, no sobre su destino.
             for detalle in detalles:
 
                 porcentaje_real = (
@@ -484,10 +483,7 @@ class DistribucionConfirmacionSerializer(serializers.Serializer):
 
                 detalle["porcentaje"] = porcentaje_real
 
-        # ==================================================
         # EVITAR CATEGORIAS REPETIDAS
-        # ==================================================
-
         categorias = [
             detalle["categoria"].id
             for detalle in detalles
@@ -496,13 +492,10 @@ class DistribucionConfirmacionSerializer(serializers.Serializer):
 
         if len(categorias) != len(set(categorias)):
             raise serializers.ValidationError({
-                "detalles": "No se puede repetir una categoria."
+                "detalles": "No se puede repetir una categoría."
             })
 
-        # ==================================================
         # EVITAR METAS REPETIDAS
-        # ==================================================
-
         metas = [
             detalle["meta_ahorro"].id
             for detalle in detalles
@@ -514,10 +507,7 @@ class DistribucionConfirmacionSerializer(serializers.Serializer):
                 "detalles": "No se puede repetir una meta de ahorro."
             })
 
-        # ==================================================
         # EVITAR RESERVAS GENERALES REPETIDAS
-        # ==================================================
-
         reservas_generales = [
             detalle
             for detalle in detalles
@@ -530,10 +520,7 @@ class DistribucionConfirmacionSerializer(serializers.Serializer):
                 "detalles": "Solo puede existir una reserva general de ahorro."
             })
 
-        # ==================================================
         # EVITAR ASIGNACIONES DE INVERSION REPETIDAS
-        # ==================================================
-
         inversiones = [
             detalle
             for detalle in detalles
@@ -542,8 +529,7 @@ class DistribucionConfirmacionSerializer(serializers.Serializer):
 
         if len(inversiones) > 1:
             raise serializers.ValidationError({
-                "detalles": "Solo puede existir una asignacion de inversion."
+                "detalles": "Solo puede existir una asignación de inversión."
             })
 
         return attrs
-

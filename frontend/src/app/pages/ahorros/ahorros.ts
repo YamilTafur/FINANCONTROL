@@ -34,6 +34,8 @@ export class Ahorros implements OnInit {
   protecciones: ConfiguracionProteccion[] = [];
   retiros: RetiroAhorro[] = [];
 
+  ahorroGeneral = 0;
+
   metaSeleccionadaId: number | null = null;
 
   nombre = '';
@@ -71,11 +73,15 @@ export class Ahorros implements OnInit {
     );
   }
 
-  get totalAhorrado(): number {
+  get totalAhorroMetas(): number {
     return this.metas.reduce(
       (total, meta) => total + Number(meta.total_ahorrado),
       0
     );
+  }
+
+  get totalAhorrado(): number {
+    return this.totalAhorroMetas + this.ahorroGeneral;
   }
 
   get retirosPendientes(): number {
@@ -127,6 +133,8 @@ export class Ahorros implements OnInit {
     this.cargando = true;
     this.error = '';
 
+    this.cargarResumenAhorros();
+
     this.servicio.listarMetas().subscribe({
       next: datos => {
         this.metas = datos;
@@ -154,6 +162,26 @@ export class Ahorros implements OnInit {
         );
 
         this.cargando = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  cargarResumenAhorros(): void {
+    this.servicio.obtenerResumen().subscribe({
+      next: datos => {
+        this.ahorroGeneral = Number(
+          datos.ahorro_general
+        );
+
+        this.cdr.markForCheck();
+      },
+      error: respuesta => {
+        this.error = this.obtenerMensajeError(
+          respuesta,
+          'No se pudo cargar el ahorro general.'
+        );
+
         this.cdr.markForCheck();
       }
     });

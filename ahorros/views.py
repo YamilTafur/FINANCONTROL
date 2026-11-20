@@ -4,6 +4,8 @@ from decimal import Decimal
 from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 
 from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
@@ -289,3 +291,21 @@ class RetiroAhorroViewSet(
         return Response(
             self.get_serializer(retiro).data
         )
+
+
+@login_required
+def resumen_ahorros_api(request):
+
+    from finanzas.models import DetalleDistribucion
+
+    ahorro_general = DetalleDistribucion.objects.filter(
+        distribucion__ingreso__usuario=request.user,
+        destino="AHORRO",
+        meta_ahorro__isnull=True
+    ).aggregate(
+        total=Sum("monto")
+    )["total"] or Decimal("0.00")
+
+    return JsonResponse({
+        "ahorro_general": str(ahorro_general)
+    })

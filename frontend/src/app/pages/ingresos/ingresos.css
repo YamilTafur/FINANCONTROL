@@ -83,3 +83,146 @@ th, td {
   border-bottom: 1px solid #ddd;
   text-align: left;
 }
+
+
+.titulo-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.titulo-panel p,
+.configuracion p,
+.panel-distribucion p {
+  color: #666;
+}
+
+.boton-secundario {
+  background: #526579;
+}
+
+.configuracion {
+  margin-top: 20px;
+  padding: 18px;
+  background: #f5f8f6;
+  border-radius: 10px;
+}
+
+.porcentajes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  margin: 18px 0;
+}
+
+.porcentajes label,
+.panel-distribucion > label {
+  display: grid;
+  gap: 8px;
+}
+
+.estado-distribuido,
+.estado-pendiente {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.estado-distribuido {
+  color: #16834a;
+  background: #e2f5e9;
+}
+
+.estado-pendiente {
+  color: #946200;
+  background: #fff2cc;
+}
+
+.acciones {
+  min-width: 150px;
+}
+
+.acciones button {
+  margin: 3px;
+}
+
+.boton-distribuir {
+  background: #2563a6;
+}
+
+.panel-distribucion {
+  border: 1px solid #dce9df;
+}
+
+.panel-distribucion h3 {
+  margin-top: 22px;
+}
+
+.opciones-distribucion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 15px 0;
+}
+
+.separador {
+  height: 1px;
+  background: #ddd;
+  margin: 25px 0;
+}
+
+.resumen-distribucion {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f2f7f3;
+  border-radius: 8px;
+}
+
+.resumen-distribucion p {
+  margin: 8px 0;
+}
+
+.aviso {
+  padding: 12px;
+  background: #fff6dc;
+  border-radius: 8px;
+  color: #765a16 !important;
+}
+
+.acciones-finales {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .contenedor {
+    padding: 12px;
+    margin: 15px auto;
+  }
+
+  .panel {
+    padding: 17px;
+  }
+
+  .opciones-distribucion,
+  .acciones-finales {
+    flex-direction: column;
+  }
+
+  .opciones-distribucion button,
+  .acciones-finales button {
+    width: 100%;
+  }
+}
+
