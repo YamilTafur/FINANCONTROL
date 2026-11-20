@@ -95,6 +95,13 @@ export class Gastos implements OnInit {
   }
 
   registrarGasto(): void {
+    console.log('DATOS DEL FORMULARIO:', {
+      categoria: this.categoria,
+      presupuesto: this.presupuesto,
+      monto: this.monto,
+      fecha: this.fecha,
+      descripcion: this.descripcion
+    });
     this.error = '';
     this.mensaje = '';
 

@@ -8,7 +8,9 @@
   </header>
 
   <section class="panel">
-    <h2>Nueva categoría</h2>
+    <h2>
+      {{ categoriaEditandoId !== null ? 'Editar categoría' : 'Nueva categoría' }}
+    </h2>
 
     <form (ngSubmit)="crearCategoria()">
       <label>Nombre</label>
@@ -21,10 +23,27 @@
       />
 
       <label>Tipo</label>
-      <select name="tipo" [(ngModel)]="tipo">
+      <select
+        name="tipo"
+        [(ngModel)]="tipo"
+        (ngModelChange)="cambiarTipo()"
+      >
         <option value="GASTO">Gasto</option>
         <option value="INGRESO">Ingreso</option>
       </select>
+
+      @if (tipo === 'GASTO') {
+        <label>Grupo de distribución</label>
+        <select
+          name="grupoDistribucion"
+          [(ngModel)]="grupoDistribucion"
+          required
+        >
+          <option value="NECESIDADES">Necesidades</option>
+          <option value="GUSTOS">Gustos</option>
+          <option value="DEUDAS">Deudas</option>
+        </select>
+      }
 
       <label>Descripción</label>
       <input
@@ -34,7 +53,15 @@
         placeholder="Descripción opcional"
       />
 
-      <button type="submit">Registrar categoría</button>
+      <button type="submit">
+        {{ categoriaEditandoId !== null ? 'Guardar cambios' : 'Registrar categoría' }}
+      </button>
+
+      @if (categoriaEditandoId !== null) {
+        <button type="button" (click)="cancelarEdicion()">
+          Cancelar edición
+        </button>
+      }
     </form>
 
     @if (mensaje) {
@@ -60,6 +87,7 @@
             <tr>
               <th>Nombre</th>
               <th>Tipo</th>
+              <th>Grupo</th>
               <th>Descripción</th>
               <th>Acción</th>
             </tr>
@@ -70,8 +98,22 @@
               <tr>
                 <td>{{ categoria.nombre }}</td>
                 <td>{{ categoria.tipo }}</td>
+                <td>
+                  @if (categoria.grupo_distribucion) {
+                    {{ categoria.grupo_distribucion }}
+                  } @else {
+                    -
+                  }
+                </td>
                 <td>{{ categoria.descripcion || '-' }}</td>
                 <td>
+                  <button
+                    type="button"
+                    (click)="editarCategoria(categoria)"
+                  >
+                    Editar
+                  </button>
+
                   <button
                     class="eliminar"
                     type="button"
